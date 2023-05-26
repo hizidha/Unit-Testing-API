@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model category {
+  id            Int     @id @default(autoincrement())
+  category String @db.VarChar(50)
+  items         items[]
+}
+
+model history {
+  id        Int            @id @default(autoincrement())
+  items_id  Int
+  reason String            @default("Pengajuan anda telah di setujui") @db.VarChar(50)
+  createdAt DateTime       @default(now()) @db.Timestamp(0)
+  items     items          @relation(fields: [items_id], references: [id], map: "History_items_id_fkey")
+
+  @@index([items_id], map: "History_items_id_fkey")
+}
+
+model items {
+  id          Int          @id @default(autoincrement())
+  user_id     Int
+  category_id Int
+  name        String       @db.VarChar(100)
+  quantity    Int
+  description String       @db.VarChar(225)
+  url         String       @db.VarChar(100)
+  price       Float
+  total       Float
+  status      items_status @default(onprocess)
+  duedate     DateTime
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  history     history[]
+  category    category     @relation(fields: [category_id], references: [id], map: "Items_category_id_fkey")
+  user        user         @relation(fields: [user_id], references: [id], map: "Items_user_id_fkey")
+
+  @@index([category_id], map: "Items_category_id_fkey")
+  @@index([user_id], map: "Items_user_id_fkey")
+}
+
+model user {
+  id        Int       @id @default(autoincrement())
+  name      String    @db.VarChar(100)
+  username  String   @unique @db.VarChar(20)
+  email     String   @unique @db.VarChar(50)
+  password  String
+  role      user_role @default(member)
+  is_active Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  items     items[]
+}
+
+enum history_status {
+  onprocess
+  approve
+  reject
+}
+
+enum user_role {
+  admin
+  member
+}
+
+enum items_status {
+  onprocess
+  approve
+  reject
+}
