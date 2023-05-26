@@ -81,3 +81,33 @@ describe("EndPoint Admin - Manajemen Member ", () => {
       .expect(200);
   });
 });
+
+describe("EndPoint Admin - Manajemen Item", () => {
+  it("Testing Mengambil semua data item", async () => {
+    const items = await prisma.items.findMany();
+    const response = await request(app).get("/admin/items").expect(200);
+  });
+
+  it("testing untuk mengambil data Items By Status", async () => {
+    const status = "reject";
+
+    if (status !== "onprocess" && status !== "approve" && status !== "reject") {
+      return res.status(404).json({
+        status: "404",
+        message: "Only choose available status: onprocess, approve, reject",
+      });
+    }
+
+    const items = await prisma.items.findMany({
+      where: {
+        user_id: 4,
+        status: status,
+      },
+    });
+
+    const response = await request(app)
+      .get(`/admin/items/${status}`)
+      .expect(200);
+  });
+
+});
