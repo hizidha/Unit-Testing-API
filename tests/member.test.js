@@ -9,7 +9,7 @@ describe("EndPoint Member - Manajement Items", () => {
         id: 4,
       },
     });
-
+ 
     const response = await request(app).get("/member/profile").expect(200);
   });
 
@@ -58,5 +58,98 @@ describe("EndPoint Member - Manajement Items", () => {
     });
 
     const response = await request(app).get("/member/items").expect(200);
+  });
+
+  it("Testing untuk mengambil data Items By Id", async () => {
+    const itemsId = 100;
+
+    const item = await prisma.items.findUnique({
+      where: {
+        id: itemsId,
+      },
+    });
+
+    if (item == itemsId) {
+      const response = await request(app)
+        .get(`/member/items/${itemsId}`)
+        .expect(200);
+    } else {
+      const response = await request(app)
+        .get(`/member/items/${itemsId}`)
+        .expect(200);
+    }
+  });
+ 
+  it("testing untuk mengambil data Items By Status", async () => {
+    const status = "approve";
+
+    if (status !== "onprocess" && status !== "approve" && status !== "reject") {
+      const response = await request(app)
+        .get(`/member/items/${status}`)
+        .expect(404);
+    }
+
+    const items = await prisma.items.findMany({
+      where: {
+        user_id: 4,
+        status: status,
+      },
+    });
+    if (items === "onprocess") {
+      const response = await request(app)
+        .get(`/member/items/${status}`)
+        .expect(200);
+    } else if (items === "approve") {
+      const response = await request(app)
+        .get(`/member/items/${status}`)
+        .expect(200);
+    } else if (items === "reject") {
+      const response = await request(app)
+        .get(`/member/items/${status}`)
+        .expect(200);
+    } else {
+      const response = await request(app)
+        .get(`/member/items/${status}`)
+        .expect(200);
+    }
+  });
+
+  it("Testing untuk Update Status Item", async () => {
+    const id = 6;
+    const status = "reject";
+    let reason = "selamat pengjuan mu di setujui";
+
+    let item = await prisma.items.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    if (item == id) {
+      const response = await request(app)
+        .patch(`/admin/items/${id}`)
+        .send({ status, reason })
+        .expect(200);
+    }
+
+    const update = await prisma.items.update({
+      where: {
+        id: id,
+      },
+      data: {
+        status: status,
+      },
+    });
+
+    const history = await prisma.history.create({
+      data: {
+        items_id: id,
+        reason: reason,
+      },
+    });
+    const response = await request(app)
+      .patch(`/admin/items/${id}`)
+      .send({ status, reason })
+      .expect(400);
   });
 });
