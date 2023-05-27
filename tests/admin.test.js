@@ -7,7 +7,6 @@ describe("EndPoint Admin - Manajemen Member ", () => {
     const members = await prisma.user.findMany({
       where: { role: "member", is_active: true },
     });
-    //   };
 
     const response = await request(app).get("/admin").expect(200);
     expect(Object(response.body)).toBeTruthy();
@@ -110,4 +109,42 @@ describe("EndPoint Admin - Manajemen Item", () => {
       .expect(200);
   });
 
+  it("Testing untuk Update Status Item", async () => {
+    const id = 6;
+    const status = "reject";
+    let reason = "selamat pengajuanmu disetujui";
+
+    let item = await prisma.items.findUnique({
+      where: {
+        id: id,
+      },
+    });
+
+    if (item == id) {
+      const response = await request(app)
+        .patch(`/admin/items/${id}`)
+        .send({ status, reason })
+        .expect(200);
+    }
+
+    const update = await prisma.items.update({
+      where: {
+        id: id,
+      },
+      data: {
+        status: status,
+      },
+    });
+
+    const history = await prisma.history.create({
+      data: {
+        items_id: id,
+        reason: reason,
+      },
+    });
+    const response = await request(app)
+      .patch(`/admin/items/${id}`)
+      .send({ status, reason })
+      .expect(400);
+  });
 });
