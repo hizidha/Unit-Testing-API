@@ -59,4 +59,58 @@ describe("EndPoint Member - Manajement Items", () => {
 
     const response = await request(app).get("/member/items").expect(200);
   });
+
+  it("Testing untuk mengambil data Items By Id", async () => {
+    const itemsId = 100;
+
+    const item = await prisma.items.findUnique({
+      where: {
+        id: itemsId,
+      },
+    });
+
+    if (item == itemsId) {
+      const response = await request(app)
+        .get(`/member/items/${itemsId}`)
+        .expect(200);
+    } else {
+      const response = await request(app)
+        .get(`/member/items/${itemsId}`)
+        .expect(200);
+    }
+  });
+
+  it("testing untuk mengambil data Items By Status", async () => {
+    const status = "approve";
+
+    if (status !== "onprocess" && status !== "approve" && status !== "reject") {
+      const response = await request(app)
+        .get(`/member/items/${status}`)
+        .expect(404);
+    }
+
+    const items = await prisma.items.findMany({
+      where: {
+        user_id: 4,
+        status: status,
+      },
+    });
+    if (items === "onprocess") {
+      const response = await request(app)
+        .get(`/member/items/${status}`)
+        .expect(200);
+    } else if (items === "approve") {
+      const response = await request(app)
+        .get(`/member/items/${status}`)
+        .expect(200);
+    } else if (items === "reject") {
+      const response = await request(app)
+        .get(`/member/items/${status}`)
+        .expect(200);
+    } else {
+      const response = await request(app)
+        .get(`/member/items/${status}`)
+        .expect(200);
+    }
+  });
 });
